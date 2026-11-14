@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据结构可视化 · DataViz — 导入C代码，看数据结构动起来</title>
+<meta name="description" content="纯静态数据结构学习网站：导入 C 语言代码或选择章节，以分步动画观察指针、内存与变量变化。支持暂停、单步、调速。覆盖线性表、栈队列、树、图、查找、排序、散列、字符串全部核心数据结构。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <button class="brand" id="goHomeBtn" title="返回首页">
+      <span class="logo">🧬</span>
+      <span class="brand-name">数据结构<span class="accent">可视化</span></span>
+      <span class="brand-sub">DataViz</span>
+    </button>
+    <div class="top-actions">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input id="searchInput" type="text" placeholder="搜索：链表、快排、Dijkstra、AVL、KMP…" autocomplete="off">
+      </div>
+      <button id="themeBtn" class="icon-btn" title="切换深浅主题">🌙</button>
+      <a class="gh-btn" href="https://github.com/" target="_blank" rel="noopener" title="部署后可在 js/app.js 顶部替换为你的仓库地址">GitHub</a>
+    </div>
+  </header>
+
+  <div id="layout">
+    <aside id="sidebar"></aside>
+    <main id="main">
+
+      <!-- ============ 首页 ============ -->
+      <section id="view-home">
+        <div class="hero">
+          <div class="hero-code-bg" aria-hidden="true"></div>
+          <h1>让数据结构<span class="accent">动</span>起来</h1>
+          <p>粘贴一段 <b>C 语言代码</b>，或选择任一章节，观察每一步的指针、内存与变量变化。<br>支持<b>暂停 / 单步 / 调速 / 进度条拖动</b>，把抽象的算法拆成看得见的动作。</p>
+          <div class="hero-actions">
+            <button id="heroCodeBtn" class="btn primary big">💻 导入代码，开始实验</button>
+            <button id="heroDocsBtn" class="btn ghost big">📖 使用指南</button>
+          </div>
+          <div class="hero-stats">
+            <span><b>15</b> 个专题章节</span><span><b>31</b> 个交互演示</span><span><b>62</b> 段 C 代码示例</span><span><b>0</b> 依赖的纯静态站</span>
+          </div>
+        </div>
+        <div id="cardGrid" class="card-grid"></div>
+        <div class="guide" id="homeGuide">
+          <h2>📖 使用指南</h2>
+          <div class="guide-cards">
+            <div class="guide-card"><span class="g-num">1</span><h4>选择章节</h4><p>左侧目录或首页卡片进入任意专题，如「链表」「快速排序」。</p></div>
+            <div class="guide-card"><span class="g-num">2</span><h4>动手演示</h4><p>「🎬 动手演示」里改数据、点生成，观察完整动画过程。</p></div>
+            <div class="guide-card"><span class="g-num">3</span><h4>导入代码</h4><p>「💻 代码可视化」里写/粘贴/导入 C 代码，点运行，逐行走给你看。</p></div>
+            <div class="guide-card"><span class="g-num">4</span><h4>控制节奏</h4><p>用 ⏯ 暂停、⏭ 单步、进度条回放、0.25~4 倍速；快捷键：空格=播放/暂停，←/→=上一步/下一步。</p></div>
+          </div>
+          <h2>🖥️ C 代码支持范围</h2>
+          <p class="guide-c">
+            支持 <code>int / char</code>、指针、<code>struct / typedef</code>、一维与<b>二维数组</b>、结构体数组、字符串、<code>malloc / free / NULL</code>、
+            <code>if / while / for / do-while / switch</code>、自定义函数与<b>递归</b>、<code>printf / scanf</code>（含「标准输入」框）、
+            三元 <code>?:</code>、逗号、位运算、<code>++ -- += &amp; * -&gt;</code> 等；<code>#include</code> 与 <code>#define</code> 自动处理。
+            解释器记录每一步的变量、内存与指针关系，自动选择<b>链表 / 树 / 数组 / 内存</b>视图渲染，
+            运行出错也会<b>动画播放到崩溃前一步</b>再给出精确定位。不支持的语法（如 <code>goto</code>）会给出<b>行号级中文报错</b>。
+          </p>
+          <h2>⚠️ 说明</h2>
+          <p class="guide-c">本站是<b>学习辅助工具</b>：解释器强制顺序执行、最大 600 步防死循环，适合理解算法流程；真实工程的编译与运行请使用标准 C 编译器（gcc/clang）。</p>
+        </div>
+      </section>
+
+      <!-- ============ 专题页 ============ -->
+      <section id="view-struct" class="hidden">
+        <div class="struct-head">
+          <button id="backBtn" class="icon-btn big" title="返回目录">←</button>
+          <div class="struct-title">
+            <h2 id="structName"></h2>
+            <p id="structSummary"></p>
+          </div>
+          <nav class="tabs" id="structTabs">
+            <button data-tab="demo" class="tab active">🎬 动手演示</button>
+            <button data-tab="code" class="tab">💻 代码可视化</button>
+            <button data-tab="docs" class="tab">📖 知识讲解</button>
+            <button data-tab="complex" class="tab">📊 复杂度</button>
+          </nav>
+        </div>
+
+        <!-- 动手演示 -->
+        <div class="tab-page" id="tab-demo">
+          <div class="workbench">
+            <div class="panel controls-panel" id="demoControls"></div>
+            <div class="panel stage-panel">
+              <div class="stage" id="demoStage">
+                <div class="stage-topbar">
+                  <span class="stage-tag">🎬 动画演示</span>
+                  <span class="stage-actions">
+                    <button id="demoFullBtn" title="全屏演示舞台">⛶</button>
+                  </span>
+                </div>
+                <canvas id="demoCanvas"></canvas>
+              </div>
+              <div class="playerbar" id="demoPlayerbar"></div>
+              <div class="sub-panels">
+                <div class="panel step-note"><div class="panel-title">💡 步骤说明</div><div id="demoText" class="step-text"></div></div>
+                <div class="panel loop-stats" id="demoStats"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 代码可视化 -->
+        <div class="tab-page hidden" id="tab-code">
+          <div class="workbench code-bench">
+            <div class="panel editor-panel">
+              <div class="editor-toolbar">
+                <select id="codePresetSel" title="选择示例代码"></select>
+                <button id="codeRunBtn" class="btn primary">▶ 运行</button>
+                <button id="codeLoadBtn" class="btn ghost" title="从本机导入 .c / .txt 文件">📂 导入文件</button>
+                <button id="codePasteBtn" class="btn ghost" title="从剪贴板粘贴代码">📋 粘贴</button>
+                <button id="codeResetBtn" class="btn ghost" title="恢复当前示例">↺ 重置</button>
+                <input type="file" id="codeFileInput" accept=".c,.h,.txt" hidden>
+              </div>
+              <div class="editor-body">
+                <div class="gutter" id="codeGutter"></div>
+                <div class="code-layer">
+                  <pre class="code-hl" id="codeHl" aria-hidden="true"></pre>
+                  <textarea id="codeEditor" spellcheck="false" wrap="off" aria-label="C 代码编辑器"></textarea>
+                </div>
+                <div class="active-line" id="codeActiveLine"></div>
+              </div>
+              <div id="codeError" class="code-error hidden"></div>
+              <div class="viz-mode-row">
+                <label for="codeStdin">⌨️ 标准输入</label>
+                <input id="codeStdin" type="text" placeholder="scanf 的数据源，如：20 15 或 3.14" value="">
+                <span class="hint">%d 读数字 · %s 读单词 · 空格/逗号分隔</span>
+              </div>
+              <div class="viz-mode-row">
+                <label for="vizModeSel">视图模式</label>
+                <select id="vizModeSel">
+                  <option value="auto">自动识别（推荐）</option>
+                  <option value="list">链表视图</option>
+                  <option value="tree">树视图</option>
+                  <option value="array">数组视图</option>
+                  <option value="memory">内存视图</option>
+                </select>
+                <span class="hint">解释器自动追踪指针与内存分配（malloc/free）</span>
+              </div>
+            </div>
+            <div class="panel stage-panel">
+              <div class="stage" id="codeStage">
+                <div class="stage-topbar">
+                  <span class="stage-tag" id="codeVizTag">🔍 内存视图</span>
+                  <span class="stage-actions">
+                    <button id="codeFullBtn" title="全屏舞台（隐藏编辑器）">⛶</button>
+                  </span>
+                </div>
+                <canvas id="codeCanvas"></canvas>
+              </div>
+              <div class="playerbar" id="codePlayerbar"></div>
+              <div class="sub-panels code-sub">
+                <div class="panel step-note"><div class="panel-title">💡 步骤说明</div><div id="codeText" class="step-text"></div></div>
+                <div class="panel vars-panel"><div class="panel-title">🔬 变量</div><div id="codeVars"></div></div>
+                <div class="panel output-panel"><div class="panel-title">🖥️ 输出（printf）</div><pre id="codeOutput"></pre></div>
+                <div class="panel stack-panel"><div class="panel-title">📚 调用栈</div><div id="codeCallstack"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 知识讲解 -->
+        <div class="tab-page hidden" id="tab-docs"><div class="docs" id="structDocs"></div></div>
+        <!-- 复杂度 -->
+        <div class="tab-page hidden" id="tab-complex">
+          <div class="complex-wrap" id="structComplex"></div>
+          <p class="complex-note">表格中 “—” 表示不适用；复杂度为常见实现下的渐进复杂度，实际随具体实现与数据分布略有差异。</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer id="foot">
+    <span>🧬 数据结构可视化 · 纯静态站点 · 可直接部署 GitHub Pages</span>
+    <span>让抽象的数据结构，一步一步看得见</span>
+  </footer>
+  <div id="toast"></div>
+</div>
+
+<script src="js/core/helpers.js"></script>
+<script src="js/core/render.js"></script>
+<script src="js/core/engine.js"></script>
+<script src="js/core/cinterp.js"></script>
+<script src="js/core/codeviz.js"></script>
+<script src="js/structures/array.js"></script>
+<script src="js/structures/searching.js"></script>
+<script src="js/structures/sorting.js"></script>
+<script src="js/structures/linkedlist.js"></script>
+<script src="js/structures/stack.js"></script>
+<script src="js/structures/queue.js"></script>
+<script src="js/structures/hashtable.js"></script>
+<script src="js/structures/binarytree.js"></script>
+<script src="js/structures/bst.js"></script>
+<script src="js/structures/avl.js"></script>
+<script src="js/structures/heap.js"></script>
+<script src="js/structures/graph.js"></script>
+<script src="js/structures/strings.js"></script>
+<script src="js/structures/codev.js"></script>
+<script src="js/structures/summary.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
